@@ -69,17 +69,55 @@ async def root():
     }
 
 
-@app.get("/api/baseline", response_model=BaselineResponse)
+@app.get("/api/debug")
+async def debug_info():
+    """Debug endpoint to check system status"""
+    import sys
+    import traceback
+
+    debug_data = {
+        "python_version": sys.version,
+        "working_directory": os.getcwd(),
+        "environment_vars": {
+            "PORT": os.getenv("PORT", "not set"),
+            "ANTHROPIC_API_KEY": "set" if os.getenv("ANTHROPIC_API_KEY") else "not set",
+            "ALLOWED_ORIGINS": os.getenv("ALLOWED_ORIGINS", "not set"),
+        }
+    }
+
+    # Test if emissions_data can be accessed
+    try:
+        test_grid = emissions_data.get_baseline_grid()
+        debug_data["emissions_data_status"] = "OK"
+        debug_data["grid_points_count"] = len(test_grid)
+    except Exception as e:
+        debug_data["emissions_data_status"] = "ERROR"
+        debug_data["emissions_data_error"] = str(e)
+        debug_data["emissions_data_traceback"] = traceback.format_exc()
+
+    # Test if AI processor can be accessed
+    try:
+        debug_data["ai_processor_status"] = "OK" if ai_processor else "NOT INITIALIZED"
+    except Exception as e:
+        debug_data["ai_processor_status"] = "ERROR"
+        debug_data["ai_processor_error"] = str(e)
+
+    return debug_data
+
+
+@app.get("/api/baseline")
 async def get_baseline():
     """
     Returns baseline NYC CO2 emissions grid
-    
+
     Combines real OpenAQ station data with synthetic gridded emissions
     based on NYC geography and known emission patterns
     """
     try:
+        print("[API] /api/baseline called")
         # Fetch and process baseline data (already filtered to NYC boundaries)
         baseline_grid = emissions_data.get_baseline_grid()
+        print(f"[API] Got {len(baseline_grid)} grid points")
         
         # Convert to response format and calculate statistics
         grid_points = []
@@ -122,13 +160,21 @@ async def get_baseline():
             "description": f"Each datapoint represents ~{cell_area_km2:.2f} km² of NYC. Total coverage: {coverage_area_km2:.0f} km² (NYC land + water)"
         }
         
+        print(f"[API] Returning {len(grid_points)} points with metadata")
         return {
             "grid": grid_points,
             "metadata": metadata
         }
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching baseline data: {str(e)}")
+        import traceback
+        error_detail = {
+            "error": str(e),
+            "type": type(e).__name__,
+            "traceback": traceback.format_exc()
+        }
+        print(f"[API ERROR] /api/baseline failed: {error_detail}")
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @app.post("/api/simulate", response_model=SimulationResponse)
