@@ -27,6 +27,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
+// API Configuration
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 const computeStats = (data) => {
   if (!data || data.length === 0) {
     return null
@@ -507,16 +510,16 @@ function App() {
   
   const loadBaseline = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/baseline')
+      const response = await fetch(`${API_URL}/api/baseline`)
       if (!response.ok) throw new Error('Failed to fetch baseline data')
-      
+
       const data = await response.json()
       setBaseline(data.grid)
       setBaselineMetadata(data.metadata)
       setIsBackendConnected(true)
     } catch (error) {
       console.error('Error loading baseline:', error)
-      setError('Backend connection failed. Please ensure the server is running on port 8000.')
+      setError('Backend connection failed. Please ensure the server is running.')
       setIsBackendConnected(false)
     }
   }
@@ -526,7 +529,7 @@ function App() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.post('http://localhost:8000/api/simulate', { prompt })
+      const res = await axios.post(`${API_URL}/api/simulate`, { prompt })
       const simulationData = res.data.grid
       const interventionData = res.data.intervention
       const statisticsData = res.data.statistics

@@ -132,6 +132,18 @@ npm run dev
 - Advanced visualization options
 - Mobile app development
 
+## 🌐 Deployment
+
+Want to deploy CarbonIQ to production? Check out our comprehensive [**DEPLOYMENT.md**](./DEPLOYMENT.md) guide!
+
+**Quick Overview:**
+- **Frontend**: Deploy to Vercel (React + Vite)
+- **Backend**: Deploy to Railway (FastAPI + Python)
+- **Setup Time**: ~15 minutes
+- **Cost**: Free tier available on both platforms
+
+[📖 Read the full deployment guide →](./DEPLOYMENT.md)
+
 ## 📄 License
 
 This project is part of GatorHacks 2025.

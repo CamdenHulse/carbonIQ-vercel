@@ -21,9 +21,11 @@ load_dotenv()
 app = FastAPI(title="CO₂UNT API", description="AI-Powered Climate Impact Simulator for NYC")
 
 # CORS middleware for frontend communication
+# Get allowed origins from environment variable or use default
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=allowed_origins,  # Configure via ALLOWED_ORIGINS env var
     allow_credentials=False,  # Set to False when allowing all origins
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
